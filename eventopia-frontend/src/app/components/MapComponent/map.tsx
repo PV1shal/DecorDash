@@ -24,30 +24,31 @@ const MapComponent = () => {
         mapRef.current.appendChild(map3DElement);
 
         // Create a polygon
-        polygon3DElement = new Polygon3DElement({
-          fillColor: "rgba(255, 0, 0, 0.5)",
-          strokeColor: "#0000FF",
-          strokeWidth: 2,
-          extruded: true
-        });
+        // polygon3DElement = new Polygon3DElement({
+        //   fillColor: "rgba(255, 0, 0, 0.5)",
+        //   strokeColor: "#0000FF",
+        //   strokeWidth: 2,
+        //   extruded: true
+        // });
 
         // Define polygon coordinates
-        polygon3DElement.outerCoordinates = [
-          {lat: 40.717766, lng: -74.012628, altitude: 2000},
-          {lat: 40.717766, lng: -74.012603, altitude: 2000},
-          {lat: 40.717766, lng: -74.012612, altitude: 2000},
-        ];
+        // polygon3DElement.outerCoordinates = [
+        //   {lat: 40.717766, lng: -74.012628, altitude: 2000},
+        //   {lat: 40.717766, lng: -74.012603, altitude: 2000},
+        //   {lat: 40.717766, lng: -74.012612, altitude: 2000},
+        // ];
 
         // Create a 3D model
         model3DElement = new Model3DElement({
-          position: { lat: 40.717766, lng: -74.012628, altitude: 0 },
-          orientation: { heading: 0, tilt: 0, roll: 0 },
+          position: { lat: 40.717766, lng: -74.012628, altitude: 10 },
+          orientation: { heading: 0, tilt: -90, roll: 0 },
           scale: 10, // Reduced scale to make it more visible
           src: "/model/shiba_glb/scene.glb", // Corrected path
+          altitudeMode: "RELATIVE_TO_GROUND",
         });
 
         // Add the polygon to the map
-        map3DElement.appendChild(polygon3DElement);
+        // map3DElement.appendChild(polygon3DElement);
         map3DElement.appendChild(model3DElement);
       }
     };
