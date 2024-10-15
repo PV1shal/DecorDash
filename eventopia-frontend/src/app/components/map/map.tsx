@@ -1,31 +1,54 @@
 "use client";
 import { useEffect, useRef } from "react";
 
-const defaultMapContainerStyle = {
-  width: "100%",
-  height: "100vh",
-  borderRadius: "15px 0px 0px 15px",
-};
-
 const MapComponent = () => {
   const mapRef = useRef(null);
 
   useEffect(() => {
     let map3DElement = null;
+    let polygon3DElement = null;
+    let model3DElement = null;
 
     const loadMap = async () => {
-      const { Map3DElement } = await google.maps.importLibrary("maps3d");
+      const { Map3DElement, Polygon3DElement, Model3DElement, } = await google.maps.importLibrary("maps3d");
      
       if (mapRef.current && !map3DElement) {
         map3DElement = new Map3DElement({
-          center: { lat: 37.819852, lng: -122.478549, altitude: 0 },
-          tilt: 67.5,
+          center: { lat: 40.717766, lng: -74.012628, altitude: 100 },
+          // tilt: 67.5,
           range: 1000,
-          heading: 0,
+          // heading: 0,
         });
        
         mapRef.current.innerHTML = ''; // Clear any existing content
         mapRef.current.appendChild(map3DElement);
+
+        // Create a polygon
+        polygon3DElement = new Polygon3DElement({
+          fillColor: "rgba(255, 0, 0, 0.5)",
+          strokeColor: "#0000FF",
+          strokeWidth: 2,
+          extruded: true
+        });
+
+        // Define polygon coordinates
+        polygon3DElement.outerCoordinates = [
+          {lat: 40.717766, lng: -74.012628, altitude: 2000},
+          {lat: 40.717766, lng: -74.012603, altitude: 2000},
+          {lat: 40.717766, lng: -74.012612, altitude: 2000},
+        ];
+
+        // Create a 3D model
+        model3DElement = new Model3DElement({
+          position: { lat: 40.717766, lng: -74.012628, altitude: 0 },
+          orientation: { heading: 0, tilt: 0, roll: 0 },
+          scale: 10, // Reduced scale to make it more visible
+          src: "/model/shiba_glb/scene.glb", // Corrected path
+        });
+
+        // Add the polygon to the map
+        map3DElement.appendChild(polygon3DElement);
+        map3DElement.appendChild(model3DElement);
       }
     };
 
@@ -45,7 +68,7 @@ const MapComponent = () => {
     };
   }, []);
 
-  return <div ref={mapRef} style={defaultMapContainerStyle}></div>;
+  return <div ref={mapRef} className="w-full h-full"></div>;
 };
 
 export { MapComponent };
