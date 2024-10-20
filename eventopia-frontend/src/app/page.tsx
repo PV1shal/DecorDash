@@ -1,5 +1,5 @@
 import { MapComponent } from "@/app/components/MapComponent/map";
-import { ShiroComponent } from "@/app/components/AssetComponents/ShiroComponent";
+import { ModelComponent } from "./components/DragAndDropComponents/ModelComponent";
 
 export default function Home() {
   return (
@@ -7,7 +7,7 @@ export default function Home() {
       <div className="flex-grow relative">
         <MapComponent />
         <div className="absolute bottom-0 w-full h-1/6 bg-opacity-50 bg-gray-50">
-          <ShiroComponent />
+          {/* <ModelComponent image="/model/shiba_glb/scene.glb" /> */}
         </div>
       </div>
     </div>

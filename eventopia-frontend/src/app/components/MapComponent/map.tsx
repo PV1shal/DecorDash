@@ -24,19 +24,19 @@ const MapComponent = () => {
         mapRef.current.appendChild(map3DElement);
 
         // Create a polygon
-        // polygon3DElement = new Polygon3DElement({
-        //   fillColor: "rgba(255, 0, 0, 0.5)",
-        //   strokeColor: "#0000FF",
-        //   strokeWidth: 2,
-        //   extruded: true
-        // });
+        polygon3DElement = new Polygon3DElement({
+          fillColor: "rgba(255, 0, 0, 0.5)",
+          strokeColor: "#0000FF",
+          strokeWidth: 2,
+          extruded: true
+        });
 
-        // Define polygon coordinates
-        // polygon3DElement.outerCoordinates = [
-        //   {lat: 40.717766, lng: -74.012628, altitude: 2000},
-        //   {lat: 40.717766, lng: -74.012603, altitude: 2000},
-        //   {lat: 40.717766, lng: -74.012612, altitude: 2000},
-        // ];
+        //Define polygon coordinates
+        polygon3DElement.outerCoordinates = [
+          {lat: 40.717766, lng: -74.012628, altitude: 2000},
+          {lat: 40.717766, lng: -74.012603, altitude: 2000},
+          {lat: 40.717766, lng: -74.012612, altitude: 2000},
+        ];
 
         // Create a 3D model
         model3DElement = new Model3DElement({
@@ -48,7 +48,7 @@ const MapComponent = () => {
         });
 
         // Add the polygon to the map
-        // map3DElement.appendChild(polygon3DElement);
+        map3DElement.appendChild(polygon3DElement);
         map3DElement.appendChild(model3DElement);
       }
     };
