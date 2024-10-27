@@ -1,16 +1,17 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDrag } from "react-dnd";
 import { useGLTF } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
+import itemTypes from "../../../../utils/ItemTypes";
 
 export interface ModelProps {
   image: string;
 }
 
-function Model() {
-  const { scene } = useGLTF("/model/shiba_glb/scene.glb");
+function Model(props:ModelProps) {
+  const { scene } = useGLTF(props.image);
   const modelRef = useRef();
   const [hovered, setHovered] = useState(false);
 
@@ -33,31 +34,29 @@ function Model() {
 
 const ModelComponent = (props:ModelProps) => {
   const {image} = props;
+  const [{ isDragging }, dragRef] = useDrag(
+    () => ({
+      type: itemTypes.ASSET,
+      collect: (monitor) => ({
+        isDragging: !!monitor.isDragging()
+      })
+    }),
+    []
+  );
+
+  useEffect(() => {
+    console.log("Doggo being dragged-o")
+  }, [isDragging]);
+
   return (
-    <div className="w-64 h-full flex-shrink-0">
+    <div ref={dragRef} className="w-64 h-full flex-shrink-0">
       <Canvas style={{ width: "100%", height: "100%" }}>
         <ambientLight intensity={0.5} />
         <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-        <Model />
+        <Model image={props.image}/>
       </Canvas>
     </div>
   );
 };
 
 export { ModelComponent };
-/*
-function Model() {
-  const TaskCard = props =>{
-    const [{isDragging}, drag] = useDrag({
-      item:{
-        type:ShiroComponent.ShiroComponent,
-        id: props.id
-      },
-      collect: monitor => ({
-        isDragging: !!monitor.isDragging(),
-      }),
-    });
-  }
-
-  return <div ref={drag}>Drag me!</div>
-}*/

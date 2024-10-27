@@ -1,8 +1,18 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { useDrop } from "react-dnd";
+import itemTypes from "../../../../utils/ItemTypes";
 
 const MapComponent = () => {
   const mapRef = useRef(null);
+
+  const [, dropRef] = useDrop({
+    accept: itemTypes.ASSET,
+    drop: (item, monitor) => {
+      const clientOffset = monitor.getClientOffset();
+      console.log("X: " + clientOffset?.x + ",Y: " + clientOffset?.y);
+    },
+  });
 
   useEffect(() => {
     let map3DElement = null;
@@ -10,8 +20,9 @@ const MapComponent = () => {
     let model3DElement = null;
 
     const loadMap = async () => {
-      const { Map3DElement, Polygon3DElement, Model3DElement, } = await google.maps.importLibrary("maps3d");
-     
+      const { Map3DElement, Polygon3DElement, Model3DElement } =
+        await google.maps.importLibrary("maps3d");
+
       if (mapRef.current && !map3DElement) {
         map3DElement = new Map3DElement({
           center: { lat: 40.717766, lng: -74.012628, altitude: 100 },
@@ -19,8 +30,8 @@ const MapComponent = () => {
           range: 1000,
           // heading: 0,
         });
-       
-        mapRef.current.innerHTML = ''; // Clear any existing content
+
+        mapRef.current.innerHTML = ""; // Clear any existing content
         mapRef.current.appendChild(map3DElement);
 
         // Create a polygon
@@ -28,14 +39,14 @@ const MapComponent = () => {
           fillColor: "rgba(255, 0, 0, 0.5)",
           strokeColor: "#0000FF",
           strokeWidth: 2,
-          extruded: true
+          extruded: true,
         });
 
         //Define polygon coordinates
         polygon3DElement.outerCoordinates = [
-          {lat: 40.717766, lng: -74.012628, altitude: 2000},
-          {lat: 40.717766, lng: -74.012603, altitude: 2000},
-          {lat: 40.717766, lng: -74.012612, altitude: 2000},
+          { lat: 40.717766, lng: -74.012628, altitude: 2000 },
+          { lat: 40.717766, lng: -74.012603, altitude: 2000 },
+          { lat: 40.717766, lng: -74.012612, altitude: 2000 },
         ];
 
         // Create a 3D model
@@ -69,7 +80,7 @@ const MapComponent = () => {
     };
   }, []);
 
-  return <div ref={mapRef} className="w-full h-full"></div>;
+  return <div ref={dropRef(mapRef)} className="w-full h-full"></div>;
 };
 
 export { MapComponent };
