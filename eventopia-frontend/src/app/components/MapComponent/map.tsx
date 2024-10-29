@@ -2,15 +2,20 @@
 import { useEffect, useRef } from "react";
 import { useDrop } from "react-dnd";
 import itemTypes from "../../../../utils/ItemTypes";
+import { useAssetContext } from "@/app/Context/3DContext";
 
 const MapComponent = () => {
   const mapRef = useRef(null);
+  const {assetList, handleDrop}= useAssetContext();
 
   const [, dropRef] = useDrop({
     accept: itemTypes.ASSET,
     drop: (item, monitor) => {
       const clientOffset = monitor.getClientOffset();
       console.log("X: " + clientOffset?.x + ",Y: " + clientOffset?.y);
+      handleDrop({
+        position: { lat: 40.717766, lng: -74.012628, altitude: 10 }
+      });
     },
   });
 
