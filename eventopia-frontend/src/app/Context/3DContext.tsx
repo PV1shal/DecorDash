@@ -6,7 +6,7 @@ interface Position {
   altitude: number;
 }
 
-interface orientation {
+interface Orientation {
   heading: number;
   tilt: number;
   roll: number;
@@ -16,7 +16,7 @@ interface AssetProperties {
   position: Position;
   scale: number;
   src: string;
-  orientation: {};
+  orientation: Orientation;
   altitudeMode: string;
 }
 
@@ -40,12 +40,13 @@ export const AssetContextProvider = ({children}) => {
             lng: assetProperties.position?.lng ?? 0,
             altitude: assetProperties.position?.altitude ?? 0,
         },
-        scale: 10,
-        orientation: { heading: 0, tilt: -90, roll: 0 },
-        src: "/model/shiba_glb/scene.glb", // Corrected path
+        scale: assetProperties.scale ?? 1,
+        orientation: assetProperties.orientation ?? { heading: 0, tilt: 0, roll: 0 },
+        src: assetProperties.src ?? "",
         altitudeMode: "RELATIVE_TO_GROUND",
     };
 
+    console.log("Dropped asset", newAsset);
     setAssetList((prevList) => [...prevList, newAsset]);
   };
 

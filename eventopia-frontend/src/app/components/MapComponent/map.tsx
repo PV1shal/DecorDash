@@ -7,19 +7,24 @@ import { useAssetContext } from "@/app/Context/3DContext";
 const MapComponent = () => {
   const mapRef = useRef(null);
   const [map3DElement, setMap3DElement] = useState(null);
+  const [assetProperties, setAssetProperties] = useState({
+    position: { lat: 0, lng: 0, altitude: 0 },
+    scale: 10,
+    orientation: { heading: 0, tilt: -90, roll: 0 },
+    src: "/model/shiba_glb/scene.glb",
+    altitudeMode: "RELATIVE_TO_GROUND",
+  });
   const { assetList, handleDrop } = useAssetContext();
 
   const [, dropRef] = useDrop({
     accept: itemTypes.ASSET,
     drop: (item, monitor) => {
       const clientOffset = monitor.getClientOffset();
-      if (clientOffset && map3DElement) {
-        const { x, y } = clientOffset;
-        console.log("Client offset - X:", x, "Y:", y);
-
-        handleDrop({
-          position: { lat: 40.717766, lng: -74.012628, altitude: 10 }
-        });
+      console.log("X: " + clientOffset?.x + ",Y: " + clientOffset?.y);
+      if (assetProperties.position) {
+        handleDrop(assetProperties);
+      } else {
+        console.log("No valid position available. Please click on the map or enter coordinates.");
       }
     },
   });
@@ -43,7 +48,15 @@ const MapComponent = () => {
         newMap3DElement.addEventListener('gmp-click', (event) => {
           if (event instanceof LocationClickEvent && event.position) {
             console.log(`Clicked at: Lat ${event.position.lat}, Lng ${event.position.lng}, Alt ${event.position.altitude}`);
-            // Handle the click event
+            setAssetProperties(prev => ({
+              ...prev,
+              position: {
+                lat: event.position.lat,
+                lng: event.position.lng,
+                altitude: event.position.altitude || 0,
+              },
+              orientation: { heading: 0, tilt: -90, roll: 0 },
+            }));
           }
         });
       }
@@ -78,7 +91,6 @@ const MapComponent = () => {
       // Add new models
       assetList.forEach((asset) => {
         const model3DElement = new Model3DElement(asset);
-
         map3DElement.appendChild(model3DElement);
       });
     };
@@ -86,7 +98,104 @@ const MapComponent = () => {
     add3DAssets();
   }, [assetList, map3DElement]);
 
-  return <div ref={dropRef(mapRef)} className="w-full h-full"></div>;
+  const handleAssetChange = (e, field, subField = null) => {
+    if (subField) {
+      setAssetProperties(prev => ({
+        ...prev,
+        [field]: {
+          ...prev[field],
+          [subField]: parseFloat(e.target.value) || 0
+        }
+      }));
+    } else {
+      setAssetProperties(prev => ({
+        ...prev,
+        [field]: field === 'src' || field === 'altitudeMode' ? e.target.value : parseFloat(e.target.value) || 0
+      }));
+    }
+  };
+
+  const handleDropAtCoordinates = () => {
+    handleDrop(assetProperties);
+  };
+
+  return (
+    <div className="relative w-full h-full">
+      <div ref={dropRef(mapRef)} className="w-full h-full"></div>
+      <div className="absolute top-4 right-4 bg-white p-4 rounded shadow">
+        <h3 className="text-lg font-bold mb-2">Asset Properties</h3>
+        <div className="mb-2">
+          <label className="block">Latitude:</label>
+          <input
+            type="number"
+            value={assetProperties.position.lat}
+            onChange={(e) => handleAssetChange(e, 'position', 'lat')}
+            className="w-full border rounded px-2 py-1"
+          />
+        </div>
+        <div className="mb-2">
+          <label className="block">Longitude:</label>
+          <input
+            type="number"
+            value={assetProperties.position.lng}
+            onChange={(e) => handleAssetChange(e, 'position', 'lng')}
+            className="w-full border rounded px-2 py-1"
+          />
+        </div>
+        <div className="mb-2">
+          <label className="block">Altitude:</label>
+          <input
+            type="number"
+            value={assetProperties.position.altitude}
+            onChange={(e) => handleAssetChange(e, 'position', 'altitude')}
+            className="w-full border rounded px-2 py-1"
+          />
+        </div>
+        <div className="mb-2">
+          <label className="block">Scale:</label>
+          <input
+            type="number"
+            value={assetProperties.scale}
+            onChange={(e) => handleAssetChange(e, 'scale')}
+            className="w-full border rounded px-2 py-1"
+          />
+        </div>
+        <div className="mb-2">
+          <label className="block">Heading:</label>
+          <input
+            type="number"
+            value={assetProperties.orientation.heading}
+            onChange={(e) => handleAssetChange(e, 'orientation', 'heading')}
+            className="w-full border rounded px-2 py-1"
+          />
+        </div>
+        <div className="mb-2">
+          <label className="block">Tilt:</label>
+          <input
+            type="number"
+            value={assetProperties.orientation.tilt}
+            onChange={(e) => handleAssetChange(e, 'orientation', 'tilt')}
+            className="w-full border rounded px-2 py-1"
+          />
+        </div>
+        <div className="mb-2">
+          <label className="block">Roll:</label>
+          <input
+            type="number"
+            value={assetProperties.orientation.roll}
+            onChange={(e) => handleAssetChange(e, 'orientation', 'roll')}
+            className="w-full border rounded px-2 py-1"
+          />
+        </div>
+        <button
+          onClick={handleDropAtCoordinates}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Drop Asset Here
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export { MapComponent };
