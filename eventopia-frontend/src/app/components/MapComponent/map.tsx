@@ -1,71 +1,51 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDrop } from "react-dnd";
 import itemTypes from "../../../../utils/ItemTypes";
 import { useAssetContext } from "@/app/Context/3DContext";
 
 const MapComponent = () => {
   const mapRef = useRef(null);
-  const {assetList, handleDrop}= useAssetContext();
+  const [map3DElement, setMap3DElement] = useState(null);
+  const { assetList, handleDrop } = useAssetContext();
 
   const [, dropRef] = useDrop({
     accept: itemTypes.ASSET,
     drop: (item, monitor) => {
       const clientOffset = monitor.getClientOffset();
-      console.log("X: " + clientOffset?.x + ",Y: " + clientOffset?.y);
-      handleDrop({
-        position: { lat: 40.717766, lng: -74.012628, altitude: 10 }
-      });
+      if (clientOffset && map3DElement) {
+        const { x, y } = clientOffset;
+        console.log("Client offset - X:", x, "Y:", y);
+
+        handleDrop({
+          position: { lat: 40.717766, lng: -74.012628, altitude: 10 }
+        });
+      }
     },
   });
 
   useEffect(() => {
-    let map3DElement = null;
-    let polygon3DElement = null;
-    let model3DElement = null;
+    let isMounted = true;
 
     const loadMap = async () => {
-      const { Map3DElement, Polygon3DElement, Model3DElement } =
-        await google.maps.importLibrary("maps3d");
+      const { Map3DElement, LocationClickEvent } = await google.maps.importLibrary("maps3d");
 
-      if (mapRef.current && !map3DElement) {
-        map3DElement = new Map3DElement({
+      if (mapRef.current && !map3DElement && isMounted) {
+        const newMap3DElement = new Map3DElement({
           center: { lat: 40.717766, lng: -74.012628, altitude: 100 },
-          // tilt: 67.5,
           range: 1000,
-          // heading: 0,
         });
 
-        mapRef.current.innerHTML = ""; // Clear any existing content
-        mapRef.current.appendChild(map3DElement);
+        mapRef.current.innerHTML = "";
+        mapRef.current.appendChild(newMap3DElement);
+        setMap3DElement(newMap3DElement);
 
-        // Create a polygon
-        polygon3DElement = new Polygon3DElement({
-          fillColor: "rgba(255, 0, 0, 0.5)",
-          strokeColor: "#0000FF",
-          strokeWidth: 2,
-          extruded: true,
+        newMap3DElement.addEventListener('gmp-click', (event) => {
+          if (event instanceof LocationClickEvent && event.position) {
+            console.log(`Clicked at: Lat ${event.position.lat}, Lng ${event.position.lng}, Alt ${event.position.altitude}`);
+            // Handle the click event
+          }
         });
-
-        //Define polygon coordinates
-        polygon3DElement.outerCoordinates = [
-          { lat: 40.717766, lng: -74.012628, altitude: 2000 },
-          { lat: 40.717766, lng: -74.012603, altitude: 2000 },
-          { lat: 40.717766, lng: -74.012612, altitude: 2000 },
-        ];
-
-        // Create a 3D model
-        model3DElement = new Model3DElement({
-          position: { lat: 40.717766, lng: -74.012628, altitude: 10 },
-          orientation: { heading: 0, tilt: -90, roll: 0 },
-          scale: 10, // Reduced scale to make it more visible
-          src: "/model/shiba_glb/scene.glb", // Corrected path
-          altitudeMode: "RELATIVE_TO_GROUND",
-        });
-
-        // Add the polygon to the map
-        map3DElement.appendChild(polygon3DElement);
-        map3DElement.appendChild(model3DElement);
       }
     };
 
@@ -76,14 +56,35 @@ const MapComponent = () => {
     document.body.appendChild(script);
 
     return () => {
+      isMounted = false;
       if (script.parentNode) {
         document.body.removeChild(script);
       }
-      if (map3DElement && map3DElement.parentNode) {
-        map3DElement.parentNode.removeChild(map3DElement);
-      }
     };
   }, []);
+
+  useEffect(() => {
+    const add3DAssets = async () => {
+      if (!map3DElement) return;
+
+      console.log("Adding 3D assets", assetList);
+      const { Model3DElement } = await google.maps.importLibrary("maps3d");
+
+      // Remove existing models
+      map3DElement.querySelectorAll("model-3d").forEach((model) => {
+        model.remove();
+      });
+
+      // Add new models
+      assetList.forEach((asset) => {
+        const model3DElement = new Model3DElement(asset);
+
+        map3DElement.appendChild(model3DElement);
+      });
+    };
+
+    add3DAssets();
+  }, [assetList, map3DElement]);
 
   return <div ref={dropRef(mapRef)} className="w-full h-full"></div>;
 };
