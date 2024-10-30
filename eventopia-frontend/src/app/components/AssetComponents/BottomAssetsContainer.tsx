@@ -9,11 +9,11 @@ const BottomAssetsContainer = () => {
   return (
     <div className="fixed bottom-5 left-0 z-10">
       <div
-        className={`relative bg-[#2C2C2C] bg-opacity-80 rounded-r-xl overflow-hidden transition-all duration-500 ease-in-out h-[20vh]
-          ${isExpanded ? 'w-[99vw]' : 'w-[4rem]'}`}
+        className={`relative bg-[#2C2C2C] bg-opacity-80 rounded-r-xl transition-all duration-500 ease-in-out h-[20vh]
+          ${isExpanded ? 'w-[98vw]' : 'w-[4rem]'}`}
       >
         <button
-          className="absolute top-2 right-2 bg-[#DF2F67] rounded-full flex justify-center items-center w-12 h-12 z-20"
+          className="absolute top-[-1rem] right-[-1rem] bg-[#DF2F67] rounded-full flex justify-center items-center w-12 h-12 z-20"
           onClick={handleToggle}
         >
           <Image
