@@ -184,7 +184,7 @@ const MapComponent = () => {
             type="number"
             value={assetProperties.orientation.roll}
             onChange={(e) => handleAssetChange(e, 'orientation', 'roll')}
-            className="w-full border rounded px-2 py-1 border-none"
+            className="w-full border rounded px-2 py-1 bg-black text-white border-none"
           />
         </div>
         <button
