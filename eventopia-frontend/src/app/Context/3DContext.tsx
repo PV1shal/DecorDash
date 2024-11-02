@@ -30,9 +30,7 @@ export const AssetContextProvider = ({ children }) => {
   };
 
   return (
-    <AssetContext.Provider
-      value={{ assetList: assetList, handleDrop: handleDrop }}
-    >
+    <AssetContext.Provider value={{ assetList: assetList, handleDrop: handleDrop }}>
       {children}
     </AssetContext.Provider>
   );

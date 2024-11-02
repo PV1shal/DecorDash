@@ -4,18 +4,13 @@ import { useDrop } from "react-dnd";
 import itemTypes from "../../../../utils/ItemTypes";
 import { useAssetContext } from "@/app/Context/3DContext";
 import { AssetPropertiesComponent } from "../AssetComponents/AssetPropertiesComponent";
+import { useAssetPropertiesContext } from "@/app/Context/AssetPropertiesContext";
 
 const MapComponent = () => {
   const mapRef = useRef(null);
   const [map3DElement, setMap3DElement] = useState(null);
-  const [assetProperties, setAssetProperties] = useState({
-    position: { lat: 0, lng: 0, altitude: 0 },
-    scale: 10,
-    orientation: { heading: 0, tilt: -90, roll: 0 },
-    src: "/model/shiba_glb/scene.glb",
-    altitudeMode: "RELATIVE_TO_GROUND",
-  });
   const { assetList, handleDrop } = useAssetContext();
+  const { assetProperties, handleLocationClick}= useAssetPropertiesContext()
 
   const [, dropRef] = useDrop({
     accept: itemTypes.ASSET,
@@ -25,7 +20,9 @@ const MapComponent = () => {
       if (assetProperties.position) {
         handleDrop(assetProperties);
       } else {
-        console.log("No valid position available. Please click on the map or enter coordinates.");
+        console.log(
+          "No valid position available. Please click on the map or enter coordinates."
+        );
       }
     },
   });
@@ -34,7 +31,8 @@ const MapComponent = () => {
     let isMounted = true;
 
     const loadMap = async () => {
-      const { Map3DElement, LocationClickEvent } = await google.maps.importLibrary("maps3d");
+      const { Map3DElement, LocationClickEvent } =
+        await google.maps.importLibrary("maps3d");
 
       if (mapRef.current && !map3DElement && isMounted) {
         const newMap3DElement = new Map3DElement({
@@ -46,18 +44,15 @@ const MapComponent = () => {
         mapRef.current.appendChild(newMap3DElement);
         setMap3DElement(newMap3DElement);
 
-        newMap3DElement.addEventListener('gmp-click', (event) => {
+        newMap3DElement.addEventListener("gmp-click", (event) => {
           if (event instanceof LocationClickEvent && event.position) {
-            console.log(`Clicked at: Lat ${event.position.lat}, Lng ${event.position.lng}, Alt ${event.position.altitude}`);
-            setAssetProperties(prev => ({
-              ...prev,
-              position: {
+            handleLocationClick({
+              position:{
                 lat: event.position.lat,
                 lng: event.position.lng,
-                altitude: event.position.altitude || 0,
-              },
-              orientation: { heading: 0, tilt: -90, roll: 0 },
-            }));
+                altitude: event.position.altitude,
+              }
+            });
           }
         });
       }
@@ -98,27 +93,6 @@ const MapComponent = () => {
 
     add3DAssets();
   }, [assetList, map3DElement]);
-
-  const handleAssetChange = (e, field, subField = null) => {
-    if (subField) {
-      setAssetProperties(prev => ({
-        ...prev,
-        [field]: {
-          ...prev[field],
-          [subField]: parseFloat(e.target.value) || 0
-        }
-      }));
-    } else {
-      setAssetProperties(prev => ({
-        ...prev,
-        [field]: field === 'src' || field === 'altitudeMode' ? e.target.value : parseFloat(e.target.value) || 0
-      }));
-    }
-  };
-
-  const handleDropAtCoordinates = () => {
-    handleDrop(assetProperties);
-  };
 
   return (
     <div className="relative w-full h-full">

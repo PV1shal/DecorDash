@@ -8,17 +8,20 @@ import { AssetContextProvider } from "./Context/3DContext";
 import { useState } from "react";
 import Image from "next/image";
 import BottomASsetsContainer from "./components/AssetComponents/BottomAssetsContainer";
+import { AssetPropertiesContextProvider } from "./Context/AssetPropertiesContext";
 
 export default function Home() {
   return (
     <DndProvider backend={HTML5Backend}>
       <AssetContextProvider>
-        <div className="flex flex-col h-screen">
-          <div className="flex-grow relative flex flex-col items-center">
-            <MapComponent />
-            <BottomASsetsContainer />
+        <AssetPropertiesContextProvider>
+          <div className="flex flex-col h-screen">
+            <div className="flex-grow relative flex flex-col items-center">
+              <MapComponent />
+              <BottomASsetsContainer />
+            </div>
           </div>
-        </div>
+        </AssetPropertiesContextProvider>
       </AssetContextProvider>
     </DndProvider>
   );
