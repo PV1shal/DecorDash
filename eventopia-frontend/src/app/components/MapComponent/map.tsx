@@ -11,6 +11,8 @@ const MapComponent = () => {
   const [map3DElement, setMap3DElement] = useState(null);
   const { assetList, handleDrop } = useAssetContext();
   const { assetProperties, handleLocationClick}= useAssetPropertiesContext()
+  const [selectedPolygon, setSelectedPolygon] = useState(null);
+  const selectedPolygonRef = useRef(selectedPolygon);
 
   const [, dropRef] = useDrop({
     accept: itemTypes.ASSET,
@@ -28,10 +30,14 @@ const MapComponent = () => {
   });
 
   useEffect(() => {
+    selectedPolygonRef.current = selectedPolygon;
+  }, [selectedPolygon]);
+
+  useEffect(() => {
     let isMounted = true;
 
-    const loadMap = async () => {
-      const { Map3DElement, LocationClickEvent } =
+  const loadMap = async () => {
+      const { Map3DElement, LocationClickEvent, Polygon3DElement } =
         await google.maps.importLibrary("maps3d");
 
       if (mapRef.current && !map3DElement && isMounted) {
@@ -46,13 +52,35 @@ const MapComponent = () => {
 
         newMap3DElement.addEventListener("gmp-click", (event) => {
           if (event instanceof LocationClickEvent && event.position) {
-            handleLocationClick({
+            const res = handleLocationClick({
               position:{
                 lat: event.position.lat,
                 lng: event.position.lng,
                 altitude: event.position.altitude,
               }
             });
+            if (res.isFound) {
+
+              if (selectedPolygonRef.current) {
+                selectedPolygonRef.current.remove();
+              }
+
+              const polygon3DElement = new Polygon3DElement({
+                fillColor: "rgba(255, 0, 0, 0.5)",
+                strokeColor: "#0000FF",
+                strokeWidth: 2,
+                extruded: true,
+                outerCoordinates: [
+                  { lat: res.assetProperties.position.lat + 0.0001, lng: res.assetProperties.position.lng + 0.0001, altitude: 10 },
+                  { lat: res.assetProperties.position.lat + 0.0001, lng: res.assetProperties.position.lng - 0.0001, altitude: 10 },
+                  { lat: res.assetProperties.position.lat - 0.0001, lng: res.assetProperties.position.lng - 0.0001, altitude: 10 },
+                  { lat: res.assetProperties.position.lat - 0.0001, lng: res.assetProperties.position.lng + 0.0001, altitude: 10 },
+                ],
+              });
+              
+              newMap3DElement.appendChild(polygon3DElement);
+              setSelectedPolygon(polygon3DElement);
+            }
           }
         });
       }

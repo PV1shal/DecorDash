@@ -17,6 +17,8 @@ const defaultAssetProperty = {
   altitudeMode: "RELATIVE_TO_GROUND",
 };
 
+const MAX_DISTANCE = 10;
+
 const AssetPropertiesContext = createContext<AssetPropertiesContextType>({
   assetProperties: defaultAssetProperty,
   handleLocationClick: () => {},
@@ -31,18 +33,32 @@ export const AssetPropertiesContextProvider = ({ children }) => {
   const handleLocationClick = (assetProperties: Partial<AssetProperties>) => {
     const closestAsset = findClosestAsset(assetProperties.position);
     console.log("Closest asset: ", closestAsset);
-    const newAsset: AssetProperties = {
-      position: {
-        lat: assetProperties.position?.lat ?? 0,
-        lng: assetProperties.position?.lng ?? 0,
-        altitude: assetProperties.position?.altitude ?? 0,
-      },
-      scale: assetProperties.scale ?? defaultAssetProperty.scale,
-      orientation: assetProperties.orientation ?? defaultAssetProperty.orientation,
-      src: assetProperties.src ?? defaultAssetProperty.src,
-      altitudeMode: defaultAssetProperty.altitudeMode,
-    };
+    let newAsset: AssetProperties;
+
+    if (closestAsset.asset && closestAsset.distance < MAX_DISTANCE) {
+      newAsset = closestAsset.asset;
+      return {
+        assetProperties: newAsset,
+        isFound: true,
+      }
+    } else {
+      newAsset = {
+        position: {
+          lat: assetProperties.position?.lat ?? 0,
+          lng: assetProperties.position?.lng ?? 0,
+          altitude: assetProperties.position?.altitude ?? 0,
+        },
+        scale: assetProperties.scale ?? defaultAssetProperty.scale,
+        orientation: assetProperties.orientation ?? defaultAssetProperty.orientation,
+        src: assetProperties.src ?? defaultAssetProperty.src,
+        altitudeMode: defaultAssetProperty.altitudeMode,
+      };
+    }
     setAssetProperties(newAsset);
+    return {
+      assetProperties: newAsset,
+      isFound: false,
+    }
   };
 
   return (
