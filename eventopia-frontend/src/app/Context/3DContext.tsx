@@ -43,21 +43,26 @@ export const AssetContextProvider = ({ children }) => {
     assetListRef.current = assetList;
   }, [assetList]);
 
-  const getDistance = (position1: Position, position2: Position) => {
-    return Math.sqrt(
-      Math.pow(position1.lat - position2.lat, 2) +
-        Math.pow(position1.lng - position2.lng, 2) +
-        Math.pow(position1.altitude - position2.altitude, 2)
-    );
-  };
+  function getDistanceHaversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const distance = R * c * 1000; // Distance in meters
+    return distance;
+  }  
 
   const findClosestAsset = (position: Position) => {
   console.log("Asset list: ", assetListRef.current);
     if (assetListRef.current.length === 0) return { asset: null, distance: 0 };
     let closestAsset = assetListRef.current[0];
-    let minDistance = getDistance(position, closestAsset.position);
+    let minDistance = getDistanceHaversine(position.lat, position.lng, closestAsset.position.lat, closestAsset.position.lng);
     assetListRef.current.forEach((asset) => {
-      const distance = getDistance(position, asset.position);
+      const distance = getDistanceHaversine(position.lat, position.lng, asset.position.lat, asset.position.lng);
       if (distance < minDistance) {
         minDistance = distance;
         closestAsset = asset;
