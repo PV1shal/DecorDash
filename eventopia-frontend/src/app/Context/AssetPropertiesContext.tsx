@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { useAssetContext } from "@/app/Context/3DContext";
 
 const defaultAssetProperty = {
   position: {
@@ -24,9 +25,13 @@ const AssetPropertiesContext = createContext<AssetPropertiesContextType>({
 export const AssetPropertiesContextProvider = ({ children }) => {
   const [assetProperties, setAssetProperties] =
     useState<AssetProperties>(defaultAssetProperty);
+  
+  const { findClosestAsset } = useAssetContext();
 
   const handleLocationClick = (assetProperties: Partial<AssetProperties>) => {
-    let newAsset: AssetProperties = {
+    const closestAsset = findClosestAsset(assetProperties.position);
+    console.log("Closest asset: ", closestAsset);
+    const newAsset: AssetProperties = {
       position: {
         lat: assetProperties.position?.lat ?? 0,
         lng: assetProperties.position?.lng ?? 0,
