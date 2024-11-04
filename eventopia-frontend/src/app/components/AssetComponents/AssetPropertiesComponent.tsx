@@ -6,9 +6,27 @@ import { useAssetContext } from "@/app/Context/3DContext";
 const AssetPropertiesComponent = () => {
   const { assetList, handleDrop } = useAssetContext();
   const { assetProperties, handleLocationClick } = useAssetPropertiesContext();
-  const handleAssetChange = (a, b, c = "True") => {
-    console.log(a, b, c);
+
+  const handleAssetChange = (e, field, subField = null) => {
+    let prev = assetProperties;
+    if (subField) {
+      prev = {
+        ...prev,
+        [field]: {
+          ...prev[field],
+          [subField]: parseFloat(e.target.value) || 0
+        }
+      };
+      handleLocationClick(prev);
+    } else {
+      prev = {
+        ...prev,
+        [field]: field === 'src' || field === 'altitudeMode' ? e.target.value : parseFloat(e.target.value) || 0
+      };
+      handleLocationClick(prev);
+    }
   };
+
   const handleDropAssetAtCoordinates = () => {
    handleDrop(assetProperties);
   };
