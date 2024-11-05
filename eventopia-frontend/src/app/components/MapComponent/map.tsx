@@ -63,34 +63,38 @@ const MapComponent = () => {
               selectedPolygonRef.current.remove();
             }
             if (res.isFound) {
+              const assetPosition = res.assetProperties.position;
+              const polygonSize = 0.0001; 
+
               const polygon3DElement = new Polygon3DElement({
-                fillColor: "rgba(255, 0, 0, 0.5)",
+                fillColor: "rgba(0, 0, 0, 0.2)",
                 strokeColor: "#0000FF",
                 strokeWidth: 2,
                 extruded: true,
+                altitudeMode: "RELATIVE_TO_GROUND",
                 outerCoordinates: [
                   {
-                    lat: res.assetProperties.position.lat + 0.0001,
-                    lng: res.assetProperties.position.lng + 0.0001,
-                    altitude: 10,
+                    lat: assetPosition.lat + polygonSize,
+                    lng: assetPosition.lng + polygonSize,
+                    altitude: assetPosition.altitude + 15,
                   },
                   {
-                    lat: res.assetProperties.position.lat + 0.0001,
-                    lng: res.assetProperties.position.lng - 0.0001,
-                    altitude: 10,
+                    lat: assetPosition.lat + polygonSize,
+                    lng: assetPosition.lng - polygonSize,
+                    altitude: assetPosition.altitude + 15,
                   },
                   {
-                    lat: res.assetProperties.position.lat - 0.0001,
-                    lng: res.assetProperties.position.lng - 0.0001,
-                    altitude: 10,
+                    lat: assetPosition.lat - polygonSize,
+                    lng: assetPosition.lng - polygonSize,
+                    altitude: assetPosition.altitude + 15,
                   },
                   {
-                    lat: res.assetProperties.position.lat - 0.0001,
-                    lng: res.assetProperties.position.lng + 0.0001,
-                    altitude: 10,
+                    lat: assetPosition.lat - polygonSize,
+                    lng: assetPosition.lng + polygonSize,
+                    altitude: assetPosition.altitude + 15,
                   },
                 ],
-              });
+              });              
 
               newMap3DElement.appendChild(polygon3DElement);
               setSelectedPolygon(polygon3DElement);
