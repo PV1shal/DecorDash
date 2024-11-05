@@ -5,30 +5,26 @@ import { useAssetContext } from "@/app/Context/3DContext";
 
 const AssetPropertiesComponent = () => {
   const { assetList, handleDrop } = useAssetContext();
-  const { assetProperties, handleLocationClick } = useAssetPropertiesContext();
+  const { assetProperties, handleLocationClick, handleLocationChange } =
+    useAssetPropertiesContext();
 
   const handleAssetChange = (e, field, subField = null) => {
-    let prev = assetProperties;
+    let prev: AssetProperties = assetProperties;
     if (subField) {
-      prev = {
-        ...prev,
-        [field]: {
-          ...prev[field],
-          [subField]: parseFloat(e.target.value) || 0
-        }
-      };
-      handleLocationClick(prev);
+      prev[field][subField] = parseFloat(e.target.value) || 0;
+      handleLocationChange(prev);
     } else {
-      prev = {
-        ...prev,
-        [field]: field === 'src' || field === 'altitudeMode' ? e.target.value : parseFloat(e.target.value) || 0
-      };
-      handleLocationClick(prev);
+      prev[field] =
+        field === "src" || field === "altitudeMode"
+          ? e.target.value
+          : parseFloat(e.target.value) || 0;
+      handleLocationChange(prev);
     }
   };
 
   const handleDropAssetAtCoordinates = () => {
-   handleDrop(assetProperties);
+    console.log("Asset Properties: ", assetProperties);
+    handleDrop(assetProperties);
   };
 
   return (

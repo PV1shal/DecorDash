@@ -22,25 +22,52 @@ const MAX_DISTANCE = 10;
 const AssetPropertiesContext = createContext<AssetPropertiesContextType>({
   assetProperties: defaultAssetProperty,
   handleLocationClick: () => {},
+  handleLocationChange: () => {},
 });
 
 export const AssetPropertiesContextProvider = ({ children }) => {
   const [assetProperties, setAssetProperties] =
     useState<AssetProperties>(defaultAssetProperty);
-  
-  const { findClosestAsset } = useAssetContext();
+
+  const { assetList, findClosestAsset } = useAssetContext();
+
+  useEffect(() => {
+    console.log("Asset List: ", assetList);
+  }, [assetList]);
+
+  const handleLocationChange = (assetProperties: Partial<AssetProperties>) => {
+    setAssetProperties((prev) => {
+      return {
+        ...prev,
+        position: {
+          ...prev.position,
+          lat: assetProperties.position?.lat ?? prev.position.lat,
+          lng: assetProperties.position?.lng ?? prev.position.lng,
+          altitude:
+            assetProperties.position?.altitude ?? prev.position.altitude,
+        },
+        orientation: {
+          ...prev.orientation,
+          heading: assetProperties.orientation?.heading ?? prev.orientation.heading,
+          tilt: assetProperties.orientation?.tilt ?? prev.orientation.tilt,
+          roll:
+            assetProperties.orientation?.roll ?? prev.orientation.roll,
+        },
+      };
+    });
+  };
 
   const handleLocationClick = (assetProperties: Partial<AssetProperties>) => {
     const closestAsset = findClosestAsset(assetProperties.position);
-    console.log("Closest asset: ", closestAsset);
     let newAsset: AssetProperties;
 
     if (closestAsset.asset && closestAsset.distance < MAX_DISTANCE) {
       newAsset = closestAsset.asset;
+      setAssetProperties(newAsset);
       return {
         assetProperties: newAsset,
         isFound: true,
-      }
+      };
     } else {
       newAsset = {
         position: {
@@ -49,15 +76,16 @@ export const AssetPropertiesContextProvider = ({ children }) => {
           altitude: assetProperties.position?.altitude ?? 0,
         },
         scale: assetProperties.scale ?? defaultAssetProperty.scale,
-        orientation: assetProperties.orientation ?? defaultAssetProperty.orientation,
+        orientation:
+          assetProperties.orientation ?? defaultAssetProperty.orientation,
         src: assetProperties.src ?? defaultAssetProperty.src,
         altitudeMode: defaultAssetProperty.altitudeMode,
       };
-    }
-    setAssetProperties(newAsset);
-    return {
-      assetProperties: newAsset,
-      isFound: false,
+      setAssetProperties(newAsset);
+      return {
+        assetProperties: newAsset,
+        isFound: false,
+      };
     }
   };
 
@@ -66,6 +94,7 @@ export const AssetPropertiesContextProvider = ({ children }) => {
       value={{
         assetProperties: assetProperties,
         handleLocationClick: handleLocationClick,
+        handleLocationChange: handleLocationChange,
       }}
     >
       {children}

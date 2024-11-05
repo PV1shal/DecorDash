@@ -18,24 +18,29 @@ export const AssetContextProvider = ({ children }) => {
   const [assetList, setAssetList] = useState<AssetProperties[]>([]);
   const assetListRef = useRef(assetList);
 
-  const handleDrop = (assetProperties: Partial<AssetProperties>) => {
+  const handleDrop = (assetProperty: Partial<AssetProperties>) => {
+
+    if (assetProperty.id) {
+      updateAsset(assetProperty.id, assetProperty);
+      return;
+    }
+
     const newAsset: AssetProperties = {
       id: Date.now(),
       position: {
-        lat: assetProperties.position?.lat ?? 0,
-        lng: assetProperties.position?.lng ?? 0,
-        altitude: assetProperties.position?.altitude ?? 0,
+        lat: assetProperty.position?.lat ?? 0,
+        lng: assetProperty.position?.lng ?? 0,
+        altitude: assetProperty.position?.altitude ?? 0,
       },
-      scale: assetProperties.scale ?? 1,
-      orientation: assetProperties.orientation ?? {
-        heading: 0,
-        tilt: 0,
-        roll: 0,
+      scale: assetProperty.scale ?? 1,
+      orientation: {
+        heading: assetProperty.orientation?.heading ?? 0,
+        tilt: assetProperty.orientation?.tilt ?? 0,
+        roll: assetProperty.orientation?.roll ?? 0,
       },
-      src: assetProperties.src ?? "",
+      src: assetProperty.src ?? "",
       altitudeMode: "RELATIVE_TO_GROUND",
     };
-    
     setAssetList((prevList) => [...prevList, newAsset]);
   };
 

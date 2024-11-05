@@ -9,16 +9,16 @@ import { useAssetPropertiesContext } from "@/app/Context/AssetPropertiesContext"
 const MapComponent = () => {
   const mapRef = useRef(null);
   const [map3DElement, setMap3DElement] = useState(null);
-  const { assetList, handleDrop } = useAssetContext();
-  const { assetProperties, handleLocationClick}= useAssetPropertiesContext()
+  const { assetList, handleDrop, editingAsset } = useAssetContext();
+  const { assetProperties, handleLocationClick } = useAssetPropertiesContext();
   const [selectedPolygon, setSelectedPolygon] = useState(null);
   const selectedPolygonRef = useRef(selectedPolygon);
+  const assetElementsRef = useRef({});
 
   const [, dropRef] = useDrop({
     accept: itemTypes.ASSET,
     drop: (item, monitor) => {
       const clientOffset = monitor.getClientOffset();
-      console.log("X: " + clientOffset?.x + ",Y: " + clientOffset?.y);
       if (assetProperties.position) {
         handleDrop(assetProperties);
       } else {
@@ -36,7 +36,7 @@ const MapComponent = () => {
   useEffect(() => {
     let isMounted = true;
 
-  const loadMap = async () => {
+    const loadMap = async () => {
       const { Map3DElement, LocationClickEvent, Polygon3DElement } =
         await google.maps.importLibrary("maps3d");
 
@@ -53,31 +53,45 @@ const MapComponent = () => {
         newMap3DElement.addEventListener("gmp-click", (event) => {
           if (event instanceof LocationClickEvent && event.position) {
             const res = handleLocationClick({
-              position:{
+              position: {
                 lat: event.position.lat,
                 lng: event.position.lng,
                 altitude: event.position.altitude,
-              }
+              },
             });
+            if (selectedPolygonRef.current) {
+              selectedPolygonRef.current.remove();
+            }
             if (res.isFound) {
-
-              if (selectedPolygonRef.current) {
-                selectedPolygonRef.current.remove();
-              }
-
               const polygon3DElement = new Polygon3DElement({
                 fillColor: "rgba(255, 0, 0, 0.5)",
                 strokeColor: "#0000FF",
                 strokeWidth: 2,
                 extruded: true,
                 outerCoordinates: [
-                  { lat: res.assetProperties.position.lat + 0.0001, lng: res.assetProperties.position.lng + 0.0001, altitude: 10 },
-                  { lat: res.assetProperties.position.lat + 0.0001, lng: res.assetProperties.position.lng - 0.0001, altitude: 10 },
-                  { lat: res.assetProperties.position.lat - 0.0001, lng: res.assetProperties.position.lng - 0.0001, altitude: 10 },
-                  { lat: res.assetProperties.position.lat - 0.0001, lng: res.assetProperties.position.lng + 0.0001, altitude: 10 },
+                  {
+                    lat: res.assetProperties.position.lat + 0.0001,
+                    lng: res.assetProperties.position.lng + 0.0001,
+                    altitude: 10,
+                  },
+                  {
+                    lat: res.assetProperties.position.lat + 0.0001,
+                    lng: res.assetProperties.position.lng - 0.0001,
+                    altitude: 10,
+                  },
+                  {
+                    lat: res.assetProperties.position.lat - 0.0001,
+                    lng: res.assetProperties.position.lng - 0.0001,
+                    altitude: 10,
+                  },
+                  {
+                    lat: res.assetProperties.position.lat - 0.0001,
+                    lng: res.assetProperties.position.lng + 0.0001,
+                    altitude: 10,
+                  },
                 ],
               });
-              
+
               newMap3DElement.appendChild(polygon3DElement);
               setSelectedPolygon(polygon3DElement);
             }
@@ -101,26 +115,42 @@ const MapComponent = () => {
   }, []);
 
   useEffect(() => {
-    const add3DAssets = async () => {
+    const updateAssets = async () => {
       if (!map3DElement) return;
-
-      console.log("Adding 3D assets", assetList);
       const { Model3DElement } = await google.maps.importLibrary("maps3d");
 
-      // Remove existing models
-      map3DElement.querySelectorAll("model-3d").forEach((model) => {
-        model.remove();
+      // Remove assets that are no longer in the list
+      Object.keys(assetElementsRef.current).forEach((id) => {
+        if (!assetList.some((asset) => asset.id === id)) {
+          assetElementsRef.current[id].remove();
+          delete assetElementsRef.current[id];
+        }
       });
 
-      // Add new models
+      // Update or add new assets
       assetList.forEach((asset) => {
-        const model3DElement = new Model3DElement(asset);
-        map3DElement.appendChild(model3DElement);
+        if (assetElementsRef.current[asset.id]) {
+          // Update existing asset
+          Object.assign(assetElementsRef.current[asset.id], asset);
+        } else {
+          // Add new asset
+          const model3DElement = new Model3DElement(asset);
+          map3DElement.appendChild(model3DElement);
+          assetElementsRef.current[asset.id] = model3DElement;
+        }
       });
     };
 
-    add3DAssets();
+    updateAssets();
   }, [assetList, map3DElement]);
+
+  useEffect(() => {
+    if (editingAsset && assetElementsRef.current[editingAsset.id]) {
+      // Remove the asset being edited from the map
+      assetElementsRef.current[editingAsset.id].remove();
+      delete assetElementsRef.current[editingAsset.id];
+    }
+  }, [editingAsset]);
 
   return (
     <div className="relative w-full h-full">
