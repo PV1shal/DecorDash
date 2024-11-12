@@ -27,4 +27,5 @@ interface AssetPropertiesContextType {
   assetProperties: AssetProperties;
   handleLocationClick: (assetProperties: Partial<AssetProperties>) => void;
   handleLocationChange: (assetProperties: Partial<AssetProperties>) => void;
+  selectAssetComponent: (src:string) => void;
 }

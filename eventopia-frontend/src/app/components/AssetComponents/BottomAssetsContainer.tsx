@@ -1,16 +1,20 @@
 import Image from "next/image";
 import { ModelComponent } from "./ModelComponent";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import modelData from "../../../../utils/ModelData";
+import { useAssetPropertiesContext } from "@/app/Context/AssetPropertiesContext";
 
 const BottomAssetsContainer = () => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [selectedId, setSelectedId] = useState("1");
+  const { assetProperties, selectAssetComponent } = useAssetPropertiesContext();
   const handleToggle = () => setIsExpanded(!isExpanded);
-
-  const modelData = [
-    { id: 1, image: "/model/shiba_glb/scene.glb" },
-    { id: 2, image: "/model/ballon_glb/Ballons_NEW.glb" },
-    { id: 3, image: "/model/gazebo_glb/gazebo.glb" },
-  ];
+  
+  const onClickModelComponent = (key: string)=>{
+    setSelectedId(key);
+    selectAssetComponent(modelData[key].image);
+    console.log("AssetProperties: ", assetProperties);
+  };
 
   return (
     <div className="fixed bottom-5 left-0 z-10">
@@ -32,8 +36,10 @@ const BottomAssetsContainer = () => {
         <div className="h-full w-full">
           {isExpanded && (
             <div className="flex items-center h-full">
-              {modelData.map((model) => (
+              {Object.entries(modelData).map(([key, model]) => (
+                <button onClick={()=>onClickModelComponent(key)} >
                 <ModelComponent key={model.id} image={model.image} />
+                </button>
               ))}
             </div>
           )}

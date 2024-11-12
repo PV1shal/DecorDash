@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import { useDrag } from "react-dnd";
-import { useGLTF, OrthographicCamera } from "@react-three/drei";
+import { useGLTF } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import itemTypes from "../../../../utils/ItemTypes";
 import * as THREE from "three";

@@ -23,6 +23,7 @@ const AssetPropertiesContext = createContext<AssetPropertiesContextType>({
   assetProperties: defaultAssetProperty,
   handleLocationClick: () => {},
   handleLocationChange: () => {},
+  selectAssetComponent: () => {},
 });
 
 export const AssetPropertiesContextProvider = ({ children }) => {
@@ -34,6 +35,12 @@ export const AssetPropertiesContextProvider = ({ children }) => {
   useEffect(() => {
     console.log("Asset List: ", assetList);
   }, [assetList]);
+
+  const selectAssetComponent = (src: string) => {
+    let selectedAsset = assetProperties;
+    selectedAsset.src = src;
+    setAssetProperties(selectedAsset);
+  };
 
   const handleLocationChange = (assetProperties: Partial<AssetProperties>) => {
     setAssetProperties((prev) => {
@@ -48,10 +55,10 @@ export const AssetPropertiesContextProvider = ({ children }) => {
         },
         orientation: {
           ...prev.orientation,
-          heading: assetProperties.orientation?.heading ?? prev.orientation.heading,
+          heading:
+            assetProperties.orientation?.heading ?? prev.orientation.heading,
           tilt: assetProperties.orientation?.tilt ?? prev.orientation.tilt,
-          roll:
-            assetProperties.orientation?.roll ?? prev.orientation.roll,
+          roll: assetProperties.orientation?.roll ?? prev.orientation.roll,
         },
       };
     });
@@ -69,21 +76,9 @@ export const AssetPropertiesContextProvider = ({ children }) => {
         isFound: true,
       };
     } else {
-      newAsset = {
-        position: {
-          lat: assetProperties.position?.lat ?? 0,
-          lng: assetProperties.position?.lng ?? 0,
-          altitude: assetProperties.position?.altitude ?? 0,
-        },
-        scale: assetProperties.scale ?? defaultAssetProperty.scale,
-        orientation:
-          assetProperties.orientation ?? defaultAssetProperty.orientation,
-        src: assetProperties.src ?? defaultAssetProperty.src,
-        altitudeMode: defaultAssetProperty.altitudeMode,
-      };
-      setAssetProperties(newAsset);
+      handleLocationChange(assetProperties);
       return {
-        assetProperties: newAsset,
+        assetProperties: assetProperties,
         isFound: false,
       };
     }
@@ -95,6 +90,7 @@ export const AssetPropertiesContextProvider = ({ children }) => {
         assetProperties: assetProperties,
         handleLocationClick: handleLocationClick,
         handleLocationChange: handleLocationChange,
+        selectAssetComponent: selectAssetComponent,
       }}
     >
       {children}
