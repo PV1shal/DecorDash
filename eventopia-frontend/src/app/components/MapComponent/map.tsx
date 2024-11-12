@@ -8,12 +8,14 @@ import { useAssetPropertiesContext } from "@/app/Context/AssetPropertiesContext"
 
 const MapComponent = () => {
   const mapRef = useRef(null);
+  const searchInputRef = useRef(null);
   const [map3DElement, setMap3DElement] = useState(null);
   const { assetList, handleDrop, editingAsset } = useAssetContext();
   const { assetProperties, handleLocationClick } = useAssetPropertiesContext();
   const [selectedPolygon, setSelectedPolygon] = useState(null);
   const selectedPolygonRef = useRef(selectedPolygon);
   const assetElementsRef = useRef({});
+  const [autocomplete, setAutocomplete] = useState(null);
 
   const [, dropRef] = useDrop({
     accept: itemTypes.ASSET,
@@ -64,7 +66,7 @@ const MapComponent = () => {
             }
             if (res.isFound) {
               const assetPosition = res.assetProperties.position;
-              const polygonSize = 0.0001; 
+              const polygonSize = 0.0001;
 
               const polygon3DElement = new Polygon3DElement({
                 fillColor: "rgba(0, 0, 0, 0.2)",
@@ -94,18 +96,34 @@ const MapComponent = () => {
                     altitude: assetPosition.altitude + 15,
                   },
                 ],
-              });              
+              });
 
               newMap3DElement.appendChild(polygon3DElement);
               setSelectedPolygon(polygon3DElement);
             }
           }
         });
+
+        // Initialize autocomplete
+        const autocomplete = new google.maps.places.Autocomplete(searchInputRef.current);
+        setAutocomplete(autocomplete);
+
+        autocomplete.addListener("place_changed", () => {
+          const place = autocomplete.getPlace();
+          if (place.geometry) {
+            newMap3DElement.center = {
+              lat: place.geometry.location.lat(),
+              lng: place.geometry.location.lng(),
+              altitude: 100,
+            };
+            newMap3DElement.range = 1000;
+          }
+        });        
       }
     };
 
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY}&v=alpha&libraries=maps3d`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY}&v=alpha&libraries=maps3d,places`;
     script.async = true;
     script.onload = loadMap;
     document.body.appendChild(script);
@@ -158,6 +176,14 @@ const MapComponent = () => {
 
   return (
     <div className="relative w-full h-full">
+      <div className="absolute top-4 left-4 z-10 w-64">
+        <input
+          ref={searchInputRef}
+          type="text"
+          placeholder="Search for a location"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
       <div ref={dropRef(mapRef)} className="w-full h-full"></div>
       <AssetPropertiesComponent />
     </div>
