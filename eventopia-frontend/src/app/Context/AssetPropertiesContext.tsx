@@ -17,7 +17,7 @@ const defaultAssetProperty = {
   altitudeMode: "RELATIVE_TO_GROUND",
 };
 
-const MAX_DISTANCE = 10;
+const MAX_DISTANCE = 30;
 
 const AssetPropertiesContext = createContext<AssetPropertiesContextType>({
   assetProperties: defaultAssetProperty,
@@ -67,8 +67,10 @@ export const AssetPropertiesContextProvider = ({ children }) => {
   const handleLocationClick = (assetProperties: Partial<AssetProperties>) => {
     const closestAsset = findClosestAsset(assetProperties.position);
     let newAsset: AssetProperties;
+    console.log("Closest Asset: ", closestAsset);
 
     if (closestAsset.asset && closestAsset.distance < MAX_DISTANCE) {
+      console.log("Asset Found: ", closestAsset.asset);
       newAsset = closestAsset.asset;
       setAssetProperties(newAsset);
       return {

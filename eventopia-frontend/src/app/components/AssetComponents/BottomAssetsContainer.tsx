@@ -9,8 +9,8 @@ const BottomAssetsContainer = () => {
   const [selectedId, setSelectedId] = useState("1");
   const { assetProperties, selectAssetComponent } = useAssetPropertiesContext();
   const handleToggle = () => setIsExpanded(!isExpanded);
-  
-  const onClickModelComponent = (key: string)=>{
+
+  const onClickModelComponent = (key) => {
     setSelectedId(key);
     selectAssetComponent(modelData[key].image);
     console.log("AssetProperties: ", assetProperties);
@@ -37,8 +37,14 @@ const BottomAssetsContainer = () => {
           {isExpanded && (
             <div className="flex items-center h-full">
               {Object.entries(modelData).map(([key, model]) => (
-                <button onClick={()=>onClickModelComponent(key)} >
-                <ModelComponent key={model.id} image={model.image} />
+                <button
+                  onClick={() => onClickModelComponent(key)}
+                  key={key}
+                  className={`p-2 ${
+                    selectedId === key ? "border-2 bg-[#df2f6756]" : ""
+                  }`}
+                >
+                  <ModelComponent key={model.id} image={model.image} />
                 </button>
               ))}
             </div>
