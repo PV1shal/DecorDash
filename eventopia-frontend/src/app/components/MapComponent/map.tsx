@@ -5,6 +5,8 @@ import itemTypes from "../../../../utils/ItemTypes";
 import { useAssetContext } from "@/app/Context/3DContext";
 import { AssetPropertiesComponent } from "../AssetComponents/AssetPropertiesComponent";
 import { useAssetPropertiesContext } from "@/app/Context/AssetPropertiesContext";
+import Image from "next/image";
+import { Modal } from "@mui/material";
 
 const MapComponent = () => {
   const mapRef = useRef(null);
@@ -16,6 +18,7 @@ const MapComponent = () => {
   const selectedPolygonRef = useRef(selectedPolygon);
   const assetElementsRef = useRef({});
   const [autocomplete, setAutocomplete] = useState(null);
+  const [askGPTModal, setAskGPTModal] = useState(false);
 
   const [, dropRef] = useDrop({
     accept: itemTypes.ASSET,
@@ -105,7 +108,9 @@ const MapComponent = () => {
         });
 
         // Initialize autocomplete
-        const autocomplete = new google.maps.places.Autocomplete(searchInputRef.current);
+        const autocomplete = new google.maps.places.Autocomplete(
+          searchInputRef.current
+        );
         setAutocomplete(autocomplete);
 
         autocomplete.addListener("place_changed", () => {
@@ -118,7 +123,7 @@ const MapComponent = () => {
             };
             newMap3DElement.range = 1000;
           }
-        });        
+        });
       }
     };
 
@@ -176,13 +181,63 @@ const MapComponent = () => {
 
   return (
     <div className="relative w-full h-full">
-      <div className="absolute top-4 left-4 z-10 w-64">
-        <input
-          ref={searchInputRef}
-          type="text"
-          placeholder="Search for a location"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 w-1/3 h-12">
+        <div className="relative w-full h-full">
+          <input
+            ref={searchInputRef}
+            type="text"
+            placeholder="Search for a location"
+            className="w-full h-full px-4 py-2 pr-12 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-[#2C2C2C] bg-opacity-80 text-white"
+          />
+          <button
+            onClick={() => {
+              setAskGPTModal(true);
+            }}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 w-9 h-9 p-0 bg-[#2C2C2C] rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 overflow-hidden"
+          >
+            <img
+              src="/img/AI.png"
+              alt="AI Search"
+              className="w-full h-full object-cover"
+            />
+          </button>
+        </div>
+        <Modal
+          open={askGPTModal}
+          onClose={() => setAskGPTModal(false)}
+          aria-labelledby="ask-gpt-modal"
+          aria-describedby="modal-to-ask-gpt-questions"
+        >
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#2C2C2C] p-6 rounded-lg shadow-lg w-96">
+            <button
+              onClick={() => setAskGPTModal(false)}
+              className="absolute top-2 right-2 text-white hover:text-gray-300"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            <h2 id="ask-gpt-modal" className="text-white text-xl mb-4">
+              Ask GPT
+            </h2>
+            <input
+              type="text"
+              placeholder="Ask GPT"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-[#3C3C3C] text-white"
+            />
+          </div>
+        </Modal>
       </div>
       <div ref={dropRef(mapRef)} className="w-full h-full"></div>
       <AssetPropertiesComponent />
