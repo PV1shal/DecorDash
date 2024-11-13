@@ -5,6 +5,7 @@ import itemTypes from "../../../../utils/ItemTypes";
 import { useAssetContext } from "@/app/Context/3DContext";
 import { AssetPropertiesComponent } from "../AssetComponents/AssetPropertiesComponent";
 import { useAssetPropertiesContext } from "@/app/Context/AssetPropertiesContext";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import Image from "next/image";
 import { Modal } from "@mui/material";
 
@@ -19,6 +20,11 @@ const MapComponent = () => {
   const assetElementsRef = useRef({});
   const [autocomplete, setAutocomplete] = useState(null);
   const [askGPTModal, setAskGPTModal] = useState(false);
+  const [askGPTQuery, setAskGPTQuery] = useState("");
+  const [geminiResults, setGeminiResults] = useState([]);
+  const [resultsModal, setResultsModal] = useState(false);
+  const geminiKey = "AIzaSyCJFY61y7vm0st_Xn0yWjLnvR2c-WkOFfY";
+  const genAI = new GoogleGenerativeAI(geminiKey);
 
   const [, dropRef] = useDrop({
     accept: itemTypes.ASSET,
@@ -179,6 +185,53 @@ const MapComponent = () => {
     }
   }, [editingAsset]);
 
+  const askGemini = async () => {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const prompt = `
+      Provided a description of a location, Generate a Javascript JSON of possible addresses that match the description.
+      The output JSON should be in this format:
+      [
+        {
+          "address": <Address>,
+          "latitude": <lat>,
+          "longitude": <long>
+        }
+      ]
+      NOTE:
+      - The output should ONLY be JSON Object.
+      - DO NOT include any other information in the output.
+      - The JSON should contain at least 5 addresses.
+      - The addresses should be real and valid.
+      - The addresses should be unique.
+      Prompt: ${askGPTQuery}
+    `;
+
+    const result = await model.generateContent([prompt]);
+    const resultText = result.response.text();
+
+    try {
+      const parsedLocations = JSON.parse(resultText);
+      setGeminiResults(parsedLocations);
+      setAskGPTModal(false);
+      setResultsModal(true);
+    } catch (error) {
+      console.error("Failed to parse Gemini response:", error);
+    }
+  };
+
+  const handleAddressClick = (address) => {
+    console.log("Address clicked:", address);
+    if (searchInputRef.current) {
+      searchInputRef.current.value = address.address;
+      setResultsModal(false);
+      map3DElement.center = {
+        lat: address.latitude,
+        lng: address.longitude,
+        altitude: 100,
+      };
+    }
+  };
+
   return (
     <div className="relative w-full h-full">
       <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 w-1/3 h-12">
@@ -229,13 +282,65 @@ const MapComponent = () => {
               </svg>
             </button>
             <h2 id="ask-gpt-modal" className="text-white text-xl mb-4">
-              Ask GPT
+              Ask Gemini
             </h2>
             <input
               type="text"
-              placeholder="Ask GPT"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-[#3C3C3C] text-white"
+              placeholder="Ask Gemini"
+              className="w-72 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-[#3C3C3C] text-white"
+              onChange={(e) => {
+                setAskGPTQuery(e.target.value);
+              }}
             />
+            <button
+              onClick={askGemini}
+              className="absolute h-11 bottom-0.5 transform -translate-y-1/2 px-3 py-1 bg-[#DF2F67] text-white rounded-r-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              Ask
+            </button>
+          </div>
+        </Modal>
+        <Modal
+          open={resultsModal}
+          onClose={() => setResultsModal(false)}
+          aria-labelledby="results-modal"
+          aria-describedby="modal-with-gemini-results"
+        >
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#2C2C2C] p-6 rounded-lg shadow-lg w-96 max-h-[80vh] overflow-y-auto">
+            <button
+              onClick={() => setResultsModal(false)}
+              className="absolute top-2 right-2 text-white hover:text-gray-300"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+            <h2 id="results-modal" className="text-white text-xl mb-4">
+              Gemini Results
+            </h2>
+            <ul className="space-y-2">
+              {geminiResults.map((result, index) => (
+                <li key={index}>
+                  <button
+                    onClick={() => handleAddressClick(result)}
+                    className="w-full text-left px-4 py-2 bg-[#3C3C3C] text-white rounded-md hover:bg-[#4C4C4C] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {result.address}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         </Modal>
       </div>
