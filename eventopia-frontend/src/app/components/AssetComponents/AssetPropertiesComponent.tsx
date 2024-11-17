@@ -95,7 +95,7 @@ const AssetPropertiesComponent = () => {
       </div>
       <button
         onClick={handleDropAssetAtCoordinates}
-        className="bg-[#DF2F67] text-white mt-3 px-4 py-2 rounded hover:bg-blue-600"
+        className="bg-[#DF2F67] text-white mt-3 px-4 py-2 rounded hover:bg-[#df2f676e]"
       >
         Drop Asset Here
       </button>

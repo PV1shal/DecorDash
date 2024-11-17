@@ -13,7 +13,6 @@ const BottomAssetsContainer = () => {
   const onClickModelComponent = (key) => {
     setSelectedId(key);
     selectAssetComponent(modelData[key].image);
-    console.log("AssetProperties: ", assetProperties);
   };
 
   return (

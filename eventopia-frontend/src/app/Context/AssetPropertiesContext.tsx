@@ -67,9 +67,9 @@ export const AssetPropertiesContextProvider = ({ children }) => {
   const handleLocationClick = (assetProperties: Partial<AssetProperties>) => {
     const closestAsset = findClosestAsset(assetProperties.position);
     let newAsset: AssetProperties;
-    console.log("Closest Asset: ", closestAsset);
+    console.log("Closest Asset: ", closestAsset , MAX_DISTANCE * 2);
 
-    if (closestAsset.asset && closestAsset.distance < MAX_DISTANCE) {
+    if (closestAsset.asset && closestAsset.distance < MAX_DISTANCE * closestAsset.asset.scale / 2) {
       console.log("Asset Found: ", closestAsset.asset);
       newAsset = closestAsset.asset;
       setAssetProperties(newAsset);
