@@ -51,6 +51,8 @@ const MapComponent = () => {
       const { Map3DElement, LocationClickEvent, Polygon3DElement } =
         await google.maps.importLibrary("maps3d");
 
+      await google.maps.importLibrary("places");
+
       if (mapRef.current && !map3DElement && isMounted) {
         const newMap3DElement = new Map3DElement({
           center: { lat: 40.717766, lng: -74.012628, altitude: 100 },

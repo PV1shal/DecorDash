@@ -34,7 +34,7 @@ const BottomAssetsContainer = () => {
         </button>
         <div className="h-full w-full">
           {isExpanded && (
-            <div className="flex items-center h-full">
+            <div className="flex items-center h-full overflow-x-auto overflow-y-hidden whitespace-nowrap">
               {Object.entries(modelData).map(([key, model]) => (
                 <button
                   onClick={() => onClickModelComponent(key)}
